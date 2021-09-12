@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8" />
+    <bytecodeTargetLevel target="1.7">
+      <module name="NFC_Emulator.app" target="11" />
+      <module name="NFC_Emulator.data" target="11" />
+      <module name="NFC_Emulator.view" target="11" />
+      <module name="NFC_EMV_Emulator.app" target="11" />
+      <module name="NFC_EMV_Emulator.data" target="11" />
+      <module name="NFC_EMV_Emulator.view" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>
