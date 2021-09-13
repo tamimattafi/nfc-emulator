@@ -1,22 +1,26 @@
-package com.attafitamim.nfc.view.main
+package com.attafitamim.nfc.view.activities.main
 
 import android.app.PendingIntent
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.IsoDep
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.compose.rememberNavController
-import com.attafitamim.nfc.view.destinations.cards.list.view.BankCardsListDestination
 import com.attafitamim.nfc.view.destinations.cards.scan.view.BankCardScanDestination
 import com.attafitamim.nfc.view.navigation.NavigationHost
+import com.attafitamim.nfc.view.nfc.INfcTagHost
+import com.attafitamim.nfc.view.nfc.INfcTagListener
 import org.koin.android.ext.android.inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), INfcTagHost {
 
     private val nfcAdapter: NfcAdapter by inject()
+
+    private val nfcTagListeners by lazy {
+        HashSet<INfcTagListener>()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,13 +65,16 @@ class MainActivity : AppCompatActivity() {
     private fun handleCard() {
         val tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) as? Tag
 
-        if (tag != null) {
-            val isoDep = IsoDep.get(tag)
-            if (isoDep != null) handleCard(isoDep)
+        if (tag != null) nfcTagListeners.forEach { listener ->
+            listener.onNewTag(tag = tag)
         }
     }
 
-    private fun handleCard(isoDep: IsoDep) {
+    override fun registerListener(listener: INfcTagListener) {
+        nfcTagListeners.add(listener)
+    }
 
+    override fun unregisterListener(listener: INfcTagListener) {
+        nfcTagListeners.remove(listener)
     }
 }

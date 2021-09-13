@@ -1,4 +1,4 @@
-package com.attafitamim.nfc.view.destinations.cards.scan.source
+package com.attafitamim.nfc.view.nfc
 
 import android.nfc.tech.IsoDep
 import com.github.devnied.emvnfccard.parser.IProvider

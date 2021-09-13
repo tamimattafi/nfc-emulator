@@ -1,7 +1,7 @@
 package com.attafitamim.nfc.app.di.modules.ui.destinations.cards
 
 import com.attafitamim.nfc.view.destinations.cards.scan.model.BankCardScanViewModel
-import com.attafitamim.nfc.view.destinations.cards.scan.source.NfcEmvProvider
+import com.attafitamim.nfc.view.nfc.NfcEmvProvider
 import com.github.devnied.emvnfccard.parser.EmvTemplate
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.parameter.parametersOf
@@ -37,7 +37,8 @@ val bankCardScanModule = module {
 
         BankCardScanViewModel(
             parser = parser,
-            provider = provider
+            provider = provider,
+            nfcHost = get()
         )
     }
 }

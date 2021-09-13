@@ -6,4 +6,5 @@ sealed class BankCardScanSideEffect {
     class OpenDestination(val destination: NavigationDestination) : BankCardScanSideEffect()
     class ShowScanErrorToast(val error: String) : BankCardScanSideEffect()
     object ShowCardSavedToast : BankCardScanSideEffect()
+    object ShowScanStartToast : BankCardScanSideEffect()
 }

@@ -16,9 +16,9 @@ data class BankCard(
         val cardDate: Date,
         val cardHolder: String?,
         val cardType: String,
-        val nfcRawData: String,
-        val encodedNfcBytes: String,
-        val aidHex: String,
+        val emvRawData: String,
+        val encodedEmvBytes: String,
+        val aidEncoded: String,
         val at: String
     )
 }
