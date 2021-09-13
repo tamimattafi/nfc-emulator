@@ -25,6 +25,10 @@ val bankCardScanModule = module {
             .build()
     }
 
+    factory {
+        NfcEmvProvider()
+    }
+
     viewModel {
         val provider = get<NfcEmvProvider>()
         val parser = get<EmvTemplate> {

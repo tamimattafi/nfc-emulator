@@ -50,8 +50,7 @@ abstract class NavigationDestination {
         }
 
         private fun <T : NavigationDestination> NavBackStackEntry.getDestination(clazz: Class<T>): T {
-            val argument = arguments?.getString(DESTINATION_ARGUMENT_KEY)
-            requireNotNull(argument)
+            val argument = arguments?.getString(DESTINATION_ARGUMENT_KEY) ?: return clazz.newInstance()
             return fromStringArgument(clazz, argument)
         }
 

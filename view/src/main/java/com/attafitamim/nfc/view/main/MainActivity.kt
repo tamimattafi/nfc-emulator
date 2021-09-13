@@ -25,8 +25,7 @@ class MainActivity : AppCompatActivity() {
             val navController = rememberNavController()
             NavigationHost(
                 navController = navController,
-                initialDestination = BankCardsListDestination::class.java,
-                BankCardsListDestination::class.java,
+                initialDestination = BankCardScanDestination::class.java,
                 BankCardScanDestination::class.java
             )
         }

@@ -2,6 +2,10 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.7">
+      <module name="nfc-emulator.app" target="11" />
+      <module name="nfc-emulator.common" target="11" />
+      <module name="nfc-emulator.data" target="11" />
+      <module name="nfc-emulator.view" target="11" />
       <module name="NFC_Emulator.app" target="11" />
       <module name="NFC_Emulator.common" target="11" />
       <module name="NFC_Emulator.data" target="11" />
