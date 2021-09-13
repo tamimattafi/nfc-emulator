@@ -3,6 +3,7 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.7">
       <module name="NFC_Emulator.app" target="11" />
+      <module name="NFC_Emulator.common" target="11" />
       <module name="NFC_Emulator.data" target="11" />
       <module name="NFC_Emulator.view" target="11" />
       <module name="NFC_EMV_Emulator.app" target="11" />

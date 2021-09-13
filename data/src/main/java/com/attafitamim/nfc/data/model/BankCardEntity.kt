@@ -2,7 +2,8 @@ package com.attafitamim.nfc.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.attafitamim.nfc.data.database.LocalTables
+import com.attafitamim.nfc.data.storage.database.LocalTables
+import java.util.*
 
 @Entity(tableName = LocalTables.BANK_CARDS_TABLE)
 internal data class BankCardEntity(
@@ -12,7 +13,6 @@ internal data class BankCardEntity(
     val displayDate: String,
     val displayCardHolder: String?,
     val cardType: String,
-    val cardLabel: String,
     val encryptedPayload: String,
     val creationDate: Long
 )

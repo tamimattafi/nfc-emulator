@@ -4,12 +4,12 @@ interface ICryptoHandler {
 
     suspend fun <T> encrypt(
         data: T,
-        password: String
+        key: String
     ): String
 
     suspend fun <T> decrypt(
         encryptedData: String,
         clazz: Class<T>,
-        password: String
+        key: String
     ): T
 }

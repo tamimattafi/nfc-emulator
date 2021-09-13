@@ -9,7 +9,6 @@ internal fun BankCard.toEntity() = BankCardEntity(
     displayDate,
     displayCardHolder,
     cardType,
-    cardLabel,
     encryptedPayload,
     creationDate.time
 )
@@ -20,7 +19,6 @@ internal fun BankCardEntity.toCard() = BankCard(
     displayDate,
     displayCardHolder,
     cardType,
-    cardLabel,
     encryptedPayload,
     Date(creationDate)
 )
