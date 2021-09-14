@@ -19,19 +19,20 @@ class BankCardsSource(
             val previousPage = if (currentPage == START_PAGE_NUMBER) null
             else currentPage - DEFAULT_PAGE_STEP
 
-            val nextPage = currentPage + DEFAULT_PAGE_STEP
+            val nextPage = if (bankCardsList.isEmpty()) null
+            else currentPage + DEFAULT_PAGE_STEP
 
             LoadResult.Page(
                 data = bankCardsList,
                 prevKey = previousPage,
-                nextKey = nextPage.plus(DEFAULT_PAGE_STEP)
+                nextKey = nextPage
             )
         } catch (e: Exception) {
             LoadResult.Error(e)
         }
 
     private companion object {
-        const val START_PAGE_NUMBER = 1
+        const val START_PAGE_NUMBER = 0
         const val DEFAULT_PAGE_STEP = 1
     }
 }

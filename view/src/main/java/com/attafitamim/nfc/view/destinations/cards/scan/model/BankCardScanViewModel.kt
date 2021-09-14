@@ -4,7 +4,11 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.attafitamim.nfc.domain.usecase.cards.payload.EncryptBankCardPayload
+import com.attafitamim.nfc.domain.usecase.cards.storage.AddBankCard
 import com.attafitamim.nfc.view.destinations.cards.global.asBankCardPayload
+import com.attafitamim.nfc.view.destinations.cards.global.toBankCard
+import com.attafitamim.nfc.view.destinations.cards.list.view.BankCardsListDestination
 import com.attafitamim.nfc.view.nfc.INfcTagHost
 import com.attafitamim.nfc.view.nfc.INfcTagListener
 import com.attafitamim.nfc.view.nfc.NfcEmvProvider
@@ -21,7 +25,9 @@ import java.lang.Exception
 class BankCardScanViewModel(
     private val parser: EmvTemplate,
     private val provider: NfcEmvProvider,
-    private val nfcHost: INfcTagHost
+    private val nfcHost: INfcTagHost,
+    private val encryptBankCardPayload: EncryptBankCardPayload,
+    private val addBankCard: AddBankCard
 ) : ViewModel(), ContainerHost<BankCardScanState, BankCardScanSideEffect>, INfcTagListener {
 
     override val container by lazy {
@@ -41,6 +47,17 @@ class BankCardScanViewModel(
     override fun onNewTag(tag: Tag) {
         val isoDep = IsoDep.get(tag)
         if (isoDep != null) readCard(isoDep)
+    }
+
+    fun saveCardPayload(password: String) = intent {
+        val payload = state.cardPayload ?: return@intent
+        val encryptedPayload = encryptBankCardPayload(payload, password)
+        val bankCard = payload.toBankCard(encryptedPayload)
+        addBankCard(bankCard)
+
+        val newDestination = BankCardsListDestination()
+        val sideEffect = BankCardScanSideEffect.OpenDestination(newDestination)
+        postSideEffect(sideEffect)
     }
 
     private fun readCard(isoDep: IsoDep) = intent {

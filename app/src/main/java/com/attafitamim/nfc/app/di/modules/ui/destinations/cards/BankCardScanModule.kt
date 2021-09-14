@@ -7,7 +7,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
-val bankCardScanModule = module {
+val bankCardScanModule get() = module {
 
     factory { parametersHolder ->
         val config: EmvTemplate.Config = EmvTemplate.Config()
@@ -36,9 +36,11 @@ val bankCardScanModule = module {
         }
 
         BankCardScanViewModel(
-            parser = parser,
-            provider = provider,
-            nfcHost = get()
+            parser,
+            provider,
+            nfcHost = get(),
+            addBankCard = get(),
+            encryptBankCardPayload = get()
         )
     }
 }

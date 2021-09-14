@@ -16,7 +16,7 @@ abstract class NavigationDestination {
         = Base64.encodeToString(this.asJsonBytes, Base64.URL_SAFE)
 
     @Composable
-    abstract fun Present(navController: NavHostController)
+    protected abstract fun Present(navController: NavHostController)
 
     companion object {
         private const val DESTINATION_ARGUMENT_KEY = "destination_argument"

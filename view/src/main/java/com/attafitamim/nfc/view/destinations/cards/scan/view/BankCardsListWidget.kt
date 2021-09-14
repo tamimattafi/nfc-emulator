@@ -1,13 +1,17 @@
 package com.attafitamim.nfc.view.destinations.cards.scan.view
 
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
-import com.attafitamim.nfc.domain.model.cards.BankCard
+import com.attafitamim.nfc.view.R
 import com.attafitamim.nfc.view.common.styles.DefaultPadding
+import com.attafitamim.nfc.view.common.widgets.TextLabel
+import com.attafitamim.nfc.view.destinations.cards.global.BankCardPayloadWidget
+import com.attafitamim.nfc.view.destinations.cards.global.PasswordFormWidget
 import com.attafitamim.nfc.view.destinations.cards.scan.model.BankCardScanSideEffect
 import com.attafitamim.nfc.view.destinations.cards.scan.model.BankCardScanViewModel
 import com.attafitamim.nfc.view.navigation.NavigationDestination.Companion.toDestination
@@ -18,39 +22,33 @@ fun BankCardScanWidget(
     viewModel: BankCardScanViewModel,
     navController: NavHostController
 ) {
-    LaunchSideEffects(viewModel, navController)
-    val state = viewModel.container.stateFlow.collectAsState().value
-    BankCard(payload = state.cardPayload)
-}
-
-@Composable
-fun BankCard(payload: BankCard.Payload?) {
-    if (payload == null) {
-        Text(
-            text = "No scanned card",
-            color = Color.White
-        )
-
-        return
-    }
-
-    Text(
-        text = """
-            Number: ${payload.cardNumber}
-            Type: ${payload.cardType}
-            Emv Raw: ${payload.emvRawData}
-        """.trimIndent(),
-        color = Color.White,
-        modifier = DefaultPadding()
+    SideEffectsContainer(
+        viewModel = viewModel,
+        navController = navController
     )
+
+    val state = viewModel.container.stateFlow.collectAsState().value
+    if (state.cardPayload == null) {
+        ScanPlaceHolder()
+    } else {
+        Column {
+            BankCardPayloadWidget(payload = state.cardPayload)
+            PasswordFormWidget(onSubmit = viewModel::saveCardPayload)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun ScanPlaceHolder() {
+    TextLabel(labelId = R.string.label_no_scanned_card)
 }
 
 @Composable
-private fun LaunchSideEffects(
+private fun SideEffectsContainer(
     viewModel: BankCardScanViewModel,
     navController: NavHostController
 ) = LaunchedEffect(viewModel) {
-
     viewModel.container.sideEffectFlow.collect { sideEffect ->
         when (sideEffect) {
             is BankCardScanSideEffect.OpenDestination -> {

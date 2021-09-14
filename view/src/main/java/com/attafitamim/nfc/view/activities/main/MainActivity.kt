@@ -7,7 +7,10 @@ import android.nfc.Tag
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material.MaterialTheme
 import androidx.navigation.compose.rememberNavController
+import com.attafitamim.nfc.view.destinations.cards.details.view.BankCardDetailsDestination
+import com.attafitamim.nfc.view.destinations.cards.list.view.BankCardsListDestination
 import com.attafitamim.nfc.view.destinations.cards.scan.view.BankCardScanDestination
 import com.attafitamim.nfc.view.navigation.NavigationHost
 import com.attafitamim.nfc.view.nfc.INfcTagHost
@@ -26,12 +29,16 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val navController = rememberNavController()
-            NavigationHost(
-                navController = navController,
-                initialDestination = BankCardScanDestination::class.java,
-                BankCardScanDestination::class.java
-            )
+            MaterialTheme {
+                val navController = rememberNavController()
+                NavigationHost(
+                    navController = navController,
+                    initialDestination = BankCardsListDestination::class.java,
+                    BankCardScanDestination::class.java,
+                    BankCardsListDestination::class.java,
+                    BankCardDetailsDestination::class.java
+                )
+            }
         }
     }
 

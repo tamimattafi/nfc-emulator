@@ -7,7 +7,9 @@ import com.attafitamim.nfc.app.di.modules.data.source.bankCardsSourceModule
 import com.attafitamim.nfc.app.di.modules.data.storage.database.databaseModule
 import com.attafitamim.nfc.app.di.modules.data.usecase.bankCardUseCaseModule
 import com.attafitamim.nfc.app.di.modules.ui.activity.mainActivityModule
+import com.attafitamim.nfc.app.di.modules.ui.destinations.cards.bankCardDetailsModule
 import com.attafitamim.nfc.app.di.modules.ui.destinations.cards.bankCardScanModule
+import com.attafitamim.nfc.app.di.modules.ui.destinations.cards.bankCardsListModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -24,7 +26,9 @@ object KoinInitializer {
                 bankCardsSourceModule,
                 databaseModule,
                 bankCardUseCaseModule,
-                bankCardScanModule
+                bankCardScanModule,
+                bankCardsListModule,
+                bankCardDetailsModule
             )
         }
     }

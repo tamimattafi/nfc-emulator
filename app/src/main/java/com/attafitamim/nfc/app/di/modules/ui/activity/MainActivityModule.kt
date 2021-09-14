@@ -9,7 +9,7 @@ import com.attafitamim.nfc.view.nfc.INfcTagHost
 import org.koin.dsl.module
 import java.lang.IllegalStateException
 
-val mainActivityModule = module {
+val mainActivityModule get() = module {
 
     single<ActivityLifeCycleHandler<MainActivity>> {
         ActivityLifeCycleHandler()

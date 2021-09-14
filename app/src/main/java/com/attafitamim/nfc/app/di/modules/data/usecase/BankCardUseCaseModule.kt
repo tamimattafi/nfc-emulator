@@ -11,7 +11,7 @@ import com.attafitamim.nfc.domain.usecase.crypto.DecryptData
 import com.attafitamim.nfc.domain.usecase.crypto.EncryptData
 import org.koin.dsl.module
 
-val bankCardUseCaseModule = module {
+val bankCardUseCaseModule get() = module {
 
     factory {
         GetBankCard(bankCardsRepository = get())

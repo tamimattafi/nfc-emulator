@@ -4,7 +4,7 @@ import androidx.room.Room
 import com.attafitamim.nfc.data.storage.database.MainDatabase
 import org.koin.dsl.module
 
-val databaseModule = module {
+val databaseModule get() = module {
 
     single {
         Room.databaseBuilder(

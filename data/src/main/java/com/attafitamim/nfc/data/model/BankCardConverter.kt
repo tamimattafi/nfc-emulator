@@ -6,8 +6,6 @@ import java.util.*
 internal fun BankCard.toEntity() = BankCardEntity(
     id,
     displayNumber,
-    displayDate,
-    displayCardHolder,
     cardType,
     encryptedPayload,
     creationDate.time
@@ -16,8 +14,6 @@ internal fun BankCard.toEntity() = BankCardEntity(
 internal fun BankCardEntity.toCard() = BankCard(
     id,
     displayNumber,
-    displayDate,
-    displayCardHolder,
     cardType,
     encryptedPayload,
     Date(creationDate)

@@ -5,8 +5,6 @@ import java.util.*
 data class BankCard(
     val id: Int,
     val displayNumber: String,
-    val displayDate: String,
-    val displayCardHolder: String?,
     val cardType: String,
     val encryptedPayload: String,
     val creationDate: Date

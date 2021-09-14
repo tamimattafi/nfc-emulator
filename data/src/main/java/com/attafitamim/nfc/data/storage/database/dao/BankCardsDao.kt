@@ -15,7 +15,7 @@ internal interface BankCardsDao {
     @Query("SELECT * FROM $BANK_CARDS_TABLE WHERE id = :cardId")
     suspend fun getCard(cardId: Int): BankCardEntity
 
-    @Query("SELECT * FROM $BANK_CARDS_TABLE ORDER BY creationDate LIMIT :limit, :offset")
+    @Query("SELECT * FROM $BANK_CARDS_TABLE LIMIT :limit OFFSET :offset")
     suspend fun getCards(limit: Int, offset: Int): List<BankCardEntity>
 
     @Query("DELETE FROM $BANK_CARDS_TABLE WHERE id = :cardId")

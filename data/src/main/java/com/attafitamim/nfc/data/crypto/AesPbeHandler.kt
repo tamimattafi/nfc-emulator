@@ -21,7 +21,7 @@ class AesPbeHandler : ICryptoHandler {
         const val PBE_KEY_LENGTH = 128
 
         const val SALT_BYTES_SALT = 128
-        const val IV_BYTES_SIZE = 128
+        const val IV_BYTES_SIZE = 16
     }
 
     override suspend fun <T> encrypt(
