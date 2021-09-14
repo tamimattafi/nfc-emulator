@@ -6,6 +6,7 @@ import com.attafitamim.nfc.domain.usecase.cards.storage.GetBankCard
 import com.attafitamim.nfc.view.destinations.cards.details.view.BankCardDetailsDestination
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 
@@ -30,6 +31,16 @@ class BankCardDetailsViewModel(
         reduce {
             state.copy(bankCard = null, cardPayload = cardPayload)
         }
+
+        postSideEffect(BankCardDetailsSideEffect.ShowUnlockSuccessMessage)
+
+        val sideEffect = BankCardDetailsSideEffect.StartNfcApduService(cardPayload.encodedEmvBytes)
+        postSideEffect(sideEffect)
+    }
+
+    override fun onCleared() = intent {
+        postSideEffect(BankCardDetailsSideEffect.StopNfcEmulationService)
+        super.onCleared()
     }
 
     private fun loadData() = intent {

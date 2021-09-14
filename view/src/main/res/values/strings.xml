@@ -8,6 +8,8 @@
 
     <string name="label_add_card">Add Card</string>
 
+    <string name="label_card_unlocked">Card was unlocked. You can now use it on a POS Terminal</string>
+
     <string name="label_bank_card_number">**** **** **** %1$s</string>
 
     <string name="label_no_scanned_card">Use your phone to scan your bank card through NFC</string>

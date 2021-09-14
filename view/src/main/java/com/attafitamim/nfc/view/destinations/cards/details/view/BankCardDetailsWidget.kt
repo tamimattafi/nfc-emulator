@@ -1,10 +1,12 @@
 package com.attafitamim.nfc.view.destinations.cards.details.view
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import com.attafitamim.nfc.domain.model.cards.BankCard
 import com.attafitamim.nfc.view.R
 import com.attafitamim.nfc.view.common.styles.DefaultPadding
@@ -14,7 +16,7 @@ import com.attafitamim.nfc.view.destinations.cards.details.model.BankCardDetails
 import com.attafitamim.nfc.view.destinations.cards.global.BankCardPayloadWidget
 import com.attafitamim.nfc.view.destinations.cards.global.BankCardWidget
 import com.attafitamim.nfc.view.destinations.cards.global.PasswordFormWidget
-import kotlinx.coroutines.flow.collect
+import com.attafitamim.nfc.view.nfc.temp.NfcHostApduService
 
 @Composable
 fun BankCardDetailsWidget(
@@ -23,26 +25,26 @@ fun BankCardDetailsWidget(
     SideEffectsContainer(viewModel = viewModel)
     val state = viewModel.container.stateFlow.collectAsState().value
 
-    when {
-        state.bankCard != null -> UnlockCardWidget(
-            bankCard = state.bankCard,
-            onSubmit = viewModel::unlockCard
-        )
+    Column(
+        modifier = DefaultPadding().fillMaxWidth()
+    ) {
+        when {
+            state.bankCard != null -> UnlockCardWidget(
+                bankCard = state.bankCard,
+                onSubmit = viewModel::unlockCard
+            )
 
-        state.cardPayload != null -> ScanCardWidget(
-            bankCardPayload = state.cardPayload
-        )
+            state.cardPayload != null -> ScanCardWidget(
+                bankCardPayload = state.cardPayload
+            )
+        }
     }
 }
 
 @Composable
 private fun ScanCardWidget(bankCardPayload: BankCard.Payload) {
-    Column(
-        modifier = DefaultPadding().fillMaxWidth()
-    ) {
-        BankCardPayloadWidget(payload = bankCardPayload)
-        TextLabel(labelId = R.string.label_scan_terminal)
-    }
+    BankCardPayloadWidget(payload = bankCardPayload)
+    TextLabel(labelId = R.string.label_scan_terminal)
 }
 
 @Composable
@@ -50,22 +52,34 @@ private fun UnlockCardWidget(
     bankCard: BankCard,
     onSubmit: (password: String) -> Unit
 ) {
-    Column(
-        modifier = DefaultPadding().fillMaxWidth()
-    ) {
-        BankCardWidget(bankCard = bankCard)
-        PasswordFormWidget(onSubmit = onSubmit)
-    }
+    BankCardWidget(bankCard = bankCard)
+    PasswordFormWidget(onSubmit = onSubmit)
 }
 
 @Composable
 private fun SideEffectsContainer(
     viewModel: BankCardDetailsViewModel
-) = LaunchedEffect(viewModel) {
-    viewModel.container.sideEffectFlow.collect { sideEffect ->
-        when (sideEffect) {
-            BankCardDetailsSideEffect.ShowScanErrorToast -> TODO()
-            BankCardDetailsSideEffect.ShowScanSuccessToast -> TODO()
+) {
+    val state = viewModel.container.sideEffectFlow.collectAsState(initial = null).value
+    when (state) {
+        BankCardDetailsSideEffect.ShowUnlockSuccessMessage -> {
+            Toast.makeText(
+                LocalContext.current,
+                R.string.label_card_unlocked,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        is BankCardDetailsSideEffect.StartNfcApduService -> {
+            val intent = Intent(LocalContext.current, NfcHostApduService::class.java).apply {
+                putExtra(NfcHostApduService.NDEF_ENCODED_MESSAGE_KEY, state.emvBytes)
+            }
+            LocalContext.current.startService(intent)
+        }
+
+        BankCardDetailsSideEffect.StopNfcEmulationService -> {
+            val intent = Intent(LocalContext.current, NfcHostApduService::class.java)
+            LocalContext.current.stopService(intent)
         }
     }
 }
