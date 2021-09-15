@@ -1,6 +1,7 @@
 package com.attafitamim.nfc.view.destinations.cards.details.view
 
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,11 +58,8 @@ private fun UnlockCardWidget(
 }
 
 @Composable
-private fun SideEffectsContainer(
-    viewModel: BankCardDetailsViewModel
-) {
-    val state = viewModel.container.sideEffectFlow.collectAsState(initial = null).value
-    when (state) {
+private fun SideEffectsContainer(viewModel: BankCardDetailsViewModel) {
+    when (val state = viewModel.container.sideEffectFlow.collectAsState(initial = null).value) {
         BankCardDetailsSideEffect.ShowUnlockSuccessMessage -> {
             Toast.makeText(
                 LocalContext.current,
@@ -74,7 +72,12 @@ private fun SideEffectsContainer(
             val intent = Intent(LocalContext.current, NfcHostApduService::class.java).apply {
                 putExtra(NfcHostApduService.NDEF_ENCODED_MESSAGE_KEY, state.emvBytes)
             }
-            LocalContext.current.startService(intent)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalContext.current.startForegroundService(intent)
+            } else {
+                LocalContext.current.startService(intent)
+            }
         }
 
         BankCardDetailsSideEffect.StopNfcEmulationService -> {

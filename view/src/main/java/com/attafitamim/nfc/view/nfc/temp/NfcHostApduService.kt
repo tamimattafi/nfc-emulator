@@ -1,8 +1,11 @@
 package com.attafitamim.nfc.view.nfc.temp
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.nfc.cardemulation.HostApduService
 import android.nfc.NdefRecord
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.widget.Toast
 import android.view.Gravity
 import android.os.Bundle
@@ -10,14 +13,15 @@ import android.os.Environment
 import android.util.Base64
 import java.io.File
 import java.math.BigInteger
-import java.nio.charset.Charset
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 import android.os.Build
-
-
+import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
+import androidx.core.app.NotificationCompat
+import com.attafitamim.nfc.view.R
 
 
 /**
@@ -32,16 +36,11 @@ class NfcHostApduService : HostApduService() {
     // In the scenario that we have done a CC read, the same byte[] match
     // for ReadBinary would trigger and we don't want that in succession
     private var readCapabilityContainerCheck = false
-    private var ndefUri = NdefRecord(
-        NdefRecord.TNF_WELL_KNOWN,
-        NdefRecord.RTD_TEXT,
-        NDEF_ID,
-        "Hello world!".toByteArray(Charset.forName("UTF-8"))
-    )
-    private var ndefUriBytes = ndefUri.toByteArray()
-    private var ndefUriLength = BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray()
+    private lateinit var ndefUri: NdefRecord
+    private lateinit var ndefUriBytes: ByteArray
+    private lateinit var ndefUriLength: ByteArray
 
-    fun commonDocumentDirPath(FolderName: String): File {
+    private fun commonDocumentDirPath(FolderName: String): File {
         val dir: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
@@ -94,9 +93,66 @@ class NfcHostApduService : HostApduService() {
 
             ndefUriBytes = ndefUri.toByteArray()
             ndefUriLength = BigInteger.valueOf(ndefUriBytes.size.toLong()).toByteArray()
+            logger.log(
+                Level.INFO,
+                """
+                $TAG
+                onStartCommand() 
+                NDEF: $ndefUri"
+                """
+            )
+
+            createNotificationChannel()
+            showForegroundNotification()
+        } else {
+            stopSelf()
         }
-        logger.log(Level.INFO, "$TAG onStartCommand() | NDEF$ndefUri")
-        return START_REDELIVER_INTENT
+
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+
+    private fun showForegroundNotification() {
+        val contentTitle = "Nfc Emulator"
+        val contentText = "Scan pos terminal to pay"
+
+        val contentLogo = BitmapFactory.decodeResource(
+            resources,
+            R.drawable.ic_launcher_foreground
+        )
+
+        val notification = NotificationCompat.Builder(this, "nfc-emulator")
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
+            .setLargeIcon(contentLogo)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .build()
+
+        startForeground(1, notification)
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onStartForeground() 
+            """
+        )
+    }
+
+    private fun createNotificationChannel() {
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelName = "nfc-emulator"
+            val serviceChannel = NotificationChannel("nfc-emulator", channelName, NotificationManager.IMPORTANCE_LOW)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(serviceChannel)
+         }
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onCreateNotificationChannel() 
+            """
+        )
     }
 
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle): ByteArray {
@@ -107,9 +163,11 @@ class NfcHostApduService : HostApduService() {
         //
         logger.log(
             Level.INFO,
-            "$TAG processCommandApdu() | incoming commandApdu: " + NfcUtils.bytesToHex(
-                commandApdu
-            )
+            """
+            $TAG
+            processCommandApdu() 
+            incoming commandApdu: ${ NfcUtils.bytesToHex(commandApdu)}
+            """
         )
 
         //
@@ -122,10 +180,14 @@ class NfcHostApduService : HostApduService() {
         ) {
             logger.log(
                 Level.INFO,
-                "$TAG APDU_SELECT triggered. Our Response: " + NfcUtils.bytesToHex(
-                    A_OKAY
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                APDU_SELECT triggered
+                Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
+                """
             )
+
             return A_OKAY
         }
 
@@ -139,10 +201,14 @@ class NfcHostApduService : HostApduService() {
         ) {
             logger.log(
                 Level.INFO,
-                "$TAG CAPABILITY_CONTAINER triggered. Our Response: " + NfcUtils.bytesToHex(
-                    A_OKAY
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                CAPABILITY_CONTAINER triggered
+                Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
+                """
             )
+
             return A_OKAY
         }
 
@@ -156,10 +222,14 @@ class NfcHostApduService : HostApduService() {
         ) {
             logger.log(
                 Level.INFO,
-                "$TAG READ_CAPABILITY_CONTAINER triggered. Our Response: " + NfcUtils.bytesToHex(
-                    READ_CAPABILITY_CONTAINER_RESPONSE
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                READ_CAPABILITY_CONTAINER triggered
+                Our response READ_CAPABILITY_CONTAINER_RESPONSE: ${ NfcUtils.bytesToHex(READ_CAPABILITY_CONTAINER_RESPONSE)}
+                """
             )
+
             readCapabilityContainerCheck = true
             return READ_CAPABILITY_CONTAINER_RESPONSE
         }
@@ -174,10 +244,14 @@ class NfcHostApduService : HostApduService() {
         ) {
             logger.log(
                 Level.INFO,
-                "$TAG NDEF_SELECT triggered. Our Response: " + NfcUtils.bytesToHex(
-                    A_OKAY
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                NDEF_SELECT triggered
+                Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
+                """
             )
+
             return A_OKAY
         }
 
@@ -198,17 +272,17 @@ class NfcHostApduService : HostApduService() {
             System.arraycopy(start, 0, response, 0, start.size)
             System.arraycopy(ndefUriLength, 0, response, start.size, ndefUriLength.size)
             System.arraycopy(A_OKAY, 0, response, start.size + ndefUriLength.size, A_OKAY.size)
-            logger.log(
-                Level.INFO,
-                "$TAG $response"
-            )
 
             logger.log(
                 Level.INFO,
-                "$TAG NDEF_READ_BINARY_NLEN triggered. Our Response: " + NfcUtils.bytesToHex(
-                    response
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                NDEF_READ_BINARY_NLEN triggered
+                Our response: ${ NfcUtils.bytesToHex(response)}
+                """
             )
+
             return response
         }
 
@@ -220,7 +294,6 @@ class NfcHostApduService : HostApduService() {
                 commandApdu
             )
         ) {
-            logger.log(Level.INFO, "$TAG processCommandApdu() | NDEF_READ_BINARY_GET_NDEF triggered")
             val start = byteArrayOf(
                 0x00
             )
@@ -244,19 +317,17 @@ class NfcHostApduService : HostApduService() {
                 start.size + ndefUriLength.size + ndefUriBytes.size,
                 A_OKAY.size
             )
-            logger.log(Level.INFO, "$TAG $ndefUri")
+
             logger.log(
                 Level.INFO,
-                "$TAG NDEF_READ_BINARY_GET_NDEF triggered. Our Response: " + NfcUtils.bytesToHex(
-                    response
-                )
+                """
+                $TAG
+                processCommandApdu() 
+                NDEF_READ_BINARY_GET_NDEF triggered
+                Our response: ${ NfcUtils.bytesToHex(response)}
+                """
             )
-            val context = applicationContext
-            val text: CharSequence = "NDEF text has been sent to the reader!"
-            val duration = Toast.LENGTH_SHORT
-            val toast = Toast.makeText(context, text, duration)
-            toast.setGravity(Gravity.CENTER, 0, 0)
-            toast.show()
+
             readCapabilityContainerCheck = false
             return response
         }
@@ -264,12 +335,51 @@ class NfcHostApduService : HostApduService() {
         //
         // We're doing something outside our scope
         //
-        logger.log(Level.INFO,"$TAG processCommandApdu() | I don't know what's going on!!!.")
-        return "Can I help you?".toByteArray()
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            processCommandApdu() 
+            UNKNOWN_COMMAND
+            Our response ndefUri.payload: ${ NfcUtils.bytesToHex(ndefUri.payload)}
+            """
+        )
+
+        return ndefUri.payload
+    }
+
+    override fun onDestroy() {
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onDestroy() 
+            """
+        )
+
+        super.onDestroy()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onCreate() 
+            """
+        )
     }
 
     override fun onDeactivated(reason: Int) {
-        logger.log(Level.INFO, "$TAG onDeactivated() Fired! Reason: $reason")
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onDeactivated() 
+            Reason: $reason
+            """
+        )
     }
 
     companion object {
