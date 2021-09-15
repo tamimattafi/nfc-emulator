@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">NFC Emulator</string>
+    <string name="servicedesc">NFC emulation service</string>
+    <string name="aiddescription">NFC emulation service</string>
 </resources>

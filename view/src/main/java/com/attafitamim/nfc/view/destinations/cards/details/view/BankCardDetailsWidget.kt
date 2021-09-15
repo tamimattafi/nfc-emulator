@@ -6,8 +6,10 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewModelScope
 import com.attafitamim.nfc.domain.model.cards.BankCard
 import com.attafitamim.nfc.view.R
 import com.attafitamim.nfc.view.common.styles.DefaultPadding
@@ -18,6 +20,7 @@ import com.attafitamim.nfc.view.destinations.cards.global.BankCardPayloadWidget
 import com.attafitamim.nfc.view.destinations.cards.global.BankCardWidget
 import com.attafitamim.nfc.view.destinations.cards.global.PasswordFormWidget
 import com.attafitamim.nfc.view.nfc.temp.NfcHostApduService
+import kotlinx.coroutines.flow.collect
 
 @Composable
 fun BankCardDetailsWidget(
@@ -59,30 +62,35 @@ private fun UnlockCardWidget(
 
 @Composable
 private fun SideEffectsContainer(viewModel: BankCardDetailsViewModel) {
-    when (val state = viewModel.container.sideEffectFlow.collectAsState(initial = null).value) {
-        BankCardDetailsSideEffect.ShowUnlockSuccessMessage -> {
-            Toast.makeText(
-                LocalContext.current,
-                R.string.label_card_unlocked,
-                Toast.LENGTH_LONG
-            ).show()
-        }
+    val context = LocalContext.current
+    LaunchedEffect(viewModel.viewModelScope) {
+        viewModel.container.sideEffectFlow.collect { sideEffect ->
+            when (sideEffect) {
+                BankCardDetailsSideEffect.ShowUnlockSuccessMessage -> {
+                    Toast.makeText(
+                        context,
+                        R.string.label_card_unlocked,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
-        is BankCardDetailsSideEffect.StartNfcApduService -> {
-            val intent = Intent(LocalContext.current, NfcHostApduService::class.java).apply {
-                putExtra(NfcHostApduService.NDEF_ENCODED_MESSAGE_KEY, state.emvBytes)
+                is BankCardDetailsSideEffect.StartNfcApduService -> {
+                    val intent = Intent(context, NfcHostApduService::class.java).apply {
+                        putExtra(NfcHostApduService.NDEF_ENCODED_MESSAGE_KEY, sideEffect.emvBytes)
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(intent)
+                    } else {
+                        context.startService(intent)
+                    }
+                }
+
+                BankCardDetailsSideEffect.StopNfcEmulationService -> {
+                    val intent = Intent(context, NfcHostApduService::class.java)
+                    context.stopService(intent)
+                }
             }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                LocalContext.current.startForegroundService(intent)
-            } else {
-                LocalContext.current.startService(intent)
-            }
-        }
-
-        BankCardDetailsSideEffect.StopNfcEmulationService -> {
-            val intent = Intent(LocalContext.current, NfcHostApduService::class.java)
-            LocalContext.current.stopService(intent)
         }
     }
 }
