@@ -85,11 +85,6 @@ private fun SideEffectsContainer(viewModel: BankCardDetailsViewModel) {
                         context.startService(intent)
                     }
                 }
-
-                BankCardDetailsSideEffect.StopNfcEmulationService -> {
-                    val intent = Intent(context, NfcHostApduService::class.java)
-                    context.stopService(intent)
-                }
             }
         }
     }

@@ -38,11 +38,6 @@ class BankCardDetailsViewModel(
         postSideEffect(sideEffect)
     }
 
-    override fun onCleared() = intent {
-        postSideEffect(BankCardDetailsSideEffect.StopNfcEmulationService)
-        super.onCleared()
-    }
-
     private fun loadData() = intent {
         val bankCard = getBankCard(destination.cardId)
         reduce {

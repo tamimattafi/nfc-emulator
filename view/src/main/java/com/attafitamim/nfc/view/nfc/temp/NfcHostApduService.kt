@@ -2,6 +2,7 @@ package com.attafitamim.nfc.view.nfc.temp
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.nfc.cardemulation.HostApduService
 import android.nfc.NdefRecord
 import android.content.Intent
@@ -121,8 +122,18 @@ class NfcHostApduService : HostApduService() {
             R.drawable.ic_launcher_foreground
         )
 
+        val intent = Intent(this, NfcHostApduService::class.java)
+        val pendingIntent = PendingIntent.getService(this, 0, intent, 0)
+
+        val action = NotificationCompat.Action.Builder(
+            android.R.drawable.ic_menu_close_clear_cancel,
+            "Cancel",
+            pendingIntent
+        ).build()
+
         val notification = NotificationCompat.Builder(this, "nfc-emulator")
             .setContentTitle(contentTitle)
+            .addAction(action)
             .setContentText(contentText)
             .setLargeIcon(contentLogo)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
