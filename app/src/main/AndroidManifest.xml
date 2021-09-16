@@ -10,6 +10,7 @@
         tools:ignore="ScopedStorage" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.NFC_PREFERRED_PAYMENT_INFO"/>
 
     <uses-feature
         android:name="android.hardware.nfc"

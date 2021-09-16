@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
 
     override fun onResume() {
         super.onResume()
-        cardEmulation.setPreferredService(this, componentName)
+        cardEmulation.setPreferredService(this, nfcServiceName)
         enableNfcForegroundDispatch()
         handleCard()
     }
