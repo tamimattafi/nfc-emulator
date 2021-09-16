@@ -1,12 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
 <host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/servicedesc"
     android:requireDeviceUnlock="false"
     android:apduServiceBanner="@drawable/ic_launcher_foreground">
     <aid-group android:description="@string/aiddescription"
         android:category="payment">
-        <aid-filter android:name="F0010203040506"/>
-        <aid-filter android:name="F0394148148100"/>
         <aid-filter android:name="325041592E5359532E4444463031"/>
+        <aid-filter android:name="A0000000041010"/>
+        <aid-filter android:name="A0000000042203"/>
+        <aid-filter android:name="A0000000043060"/>
+        <aid-filter android:name="A0000000031010"/>
+        <aid-filter android:name="A0000000980840"/>
+        <aid-filter android:name="A0000000032010"/>
+        <aid-filter android:name="A0000000032020"/>
+        <aid-filter android:name="A00000000307010001"/>
+        <aid-filter android:name="A0000003241010"/>
+        <aid-filter android:name="A0000001523010"/>
+        <aid-filter android:name="A0000001524010"/>
+        <aid-filter android:name="A00000002501"/>
+        <aid-filter android:name="A000000025011001"/>
+        <aid-filter android:name="A000000025021001"/>
+        <aid-filter android:name="A0000002771010"/>
+        <aid-filter android:name="A00000038410"/>
+        <aid-filter android:name="A00000038420"/>
+        <aid-filter android:name="A0000004941010"/>
+        <aid-filter android:name="A0000004942010"/>
+        <aid-filter android:name="A0000000049101"/>
+        <aid-filter android:name="A0000007800006"/>
+        <aid-filter android:name="A0000006581010"/>
     </aid-group>
 </host-apdu-service>

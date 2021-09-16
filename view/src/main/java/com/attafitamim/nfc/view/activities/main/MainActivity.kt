@@ -49,6 +49,22 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
         }
     }
 
+    private fun checkIfDefault() {
+        val isDefault = cardEmulation.isDefaultServiceForCategory(
+            nfcServiceName,
+            CardEmulation.CATEGORY_PAYMENT
+        )
+
+        if (!isDefault) {
+            val intent = Intent(CardEmulation.ACTION_CHANGE_DEFAULT).apply {
+                putExtra(CardEmulation.EXTRA_SERVICE_COMPONENT, nfcServiceName)
+                putExtra(CardEmulation.EXTRA_CATEGORY, CardEmulation.CATEGORY_PAYMENT)
+            }
+
+            startActivity(intent)
+        }
+    }
+
     private fun enableNfcForegroundDispatch() {
         val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val nfcPendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
@@ -93,6 +109,7 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
         nfcTagListeners.add(listener)
 
         val tag = this.getCard() ?: return
+        checkIfDefault()
         listener.onNewTag(tag)
     }
 

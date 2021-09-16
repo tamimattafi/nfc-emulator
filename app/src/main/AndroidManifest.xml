@@ -16,6 +16,10 @@
         android:name="android.hardware.nfc"
         android:required="true" />
 
+    <uses-feature
+        android:name="android.hardware.nfc.hce"
+        android:required="true" />
+
     <application
         android:allowBackup="true"
         android:name=".app.App"
@@ -25,6 +29,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Main">
         <activity
+            android:launchMode="singleTask"
             android:name="com.attafitamim.nfc.view.activities.main.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -48,7 +53,9 @@
             <intent-filter>
                 <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE"/>
             </intent-filter>
-            <meta-data android:name="android.nfc.cardemulation.host_apdu_ervice" android:resource="@xml/apduservice"/>
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/apduservice"/>
         </service>
 
     </application>
