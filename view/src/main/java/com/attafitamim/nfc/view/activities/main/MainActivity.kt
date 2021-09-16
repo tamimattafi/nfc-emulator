@@ -1,9 +1,11 @@
 package com.attafitamim.nfc.view.activities.main
 
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.nfc.cardemulation.CardEmulation
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -15,19 +17,24 @@ import com.attafitamim.nfc.view.destinations.cards.scan.view.BankCardScanDestina
 import com.attafitamim.nfc.view.navigation.NavigationHost
 import com.attafitamim.nfc.view.nfc.INfcTagHost
 import com.attafitamim.nfc.view.nfc.INfcTagListener
+import com.attafitamim.nfc.view.nfc.temp.NfcHostApduService
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity(), INfcTagHost {
 
     private val nfcAdapter: NfcAdapter by inject()
+    private val cardEmulation: CardEmulation by inject()
 
     private val nfcTagListeners by lazy {
         HashSet<INfcTagListener>()
     }
 
+    private val nfcServiceName by lazy {
+        ComponentName(this, NfcHostApduService::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             MaterialTheme {
                 val navController = rememberNavController()
@@ -60,25 +67,33 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
 
     override fun onResume() {
         super.onResume()
-        handleCard()
+        cardEmulation.setPreferredService(this, componentName)
         enableNfcForegroundDispatch()
+        handleCard()
     }
 
     override fun onPause() {
+        cardEmulation.unsetPreferredService(this)
         disableNfcForegroundDispatch()
         super.onPause()
     }
 
-    private fun handleCard() {
-        val tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) as? Tag
+    private fun getCard(): Tag?
+        = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) as? Tag
 
-        if (tag != null) nfcTagListeners.forEach { listener ->
+    private fun handleCard() {
+        val tag = this.getCard() ?: return
+
+        nfcTagListeners.forEach { listener ->
             listener.onNewTag(tag = tag)
         }
     }
 
     override fun registerListener(listener: INfcTagListener) {
         nfcTagListeners.add(listener)
+
+        val tag = this.getCard() ?: return
+        listener.onNewTag(tag)
     }
 
     override fun unregisterListener(listener: INfcTagListener) {

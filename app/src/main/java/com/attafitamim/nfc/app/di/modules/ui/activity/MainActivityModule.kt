@@ -3,6 +3,7 @@ package com.attafitamim.nfc.app.di.modules.ui.activity
 import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.NfcManager
+import android.nfc.cardemulation.CardEmulation
 import com.attafitamim.nfc.view.activities.global.ActivityLifeCycleHandler
 import com.attafitamim.nfc.view.activities.main.MainActivity
 import com.attafitamim.nfc.view.nfc.INfcTagHost
@@ -24,5 +25,9 @@ val mainActivityModule get() = module {
         val context = get<Context>()
         val nfcManager = context.getSystemService(Context.NFC_SERVICE) as NfcManager
         nfcManager.defaultAdapter
+    }
+
+    factory<CardEmulation> {
+        CardEmulation.getInstance(get())
     }
 }
