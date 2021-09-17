@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
 
     override fun onResume() {
         super.onResume()
+        checkIfDefault()
         cardEmulation.setPreferredService(this, nfcServiceName)
         enableNfcForegroundDispatch()
         handleCard()
@@ -109,7 +110,6 @@ class MainActivity : AppCompatActivity(), INfcTagHost {
         nfcTagListeners.add(listener)
 
         val tag = this.getCard() ?: return
-        checkIfDefault()
         listener.onNewTag(tag)
     }
 
