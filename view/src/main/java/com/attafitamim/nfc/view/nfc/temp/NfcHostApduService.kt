@@ -105,8 +105,6 @@ class NfcHostApduService : HostApduService() {
 
             createNotificationChannel()
             showForegroundNotification()
-        } else {
-            stopSelf()
         }
 
         return super.onStartCommand(intent, flags, startId)
