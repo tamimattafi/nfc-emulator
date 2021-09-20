@@ -23,6 +23,8 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import com.attafitamim.nfc.view.R
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 /**
@@ -62,24 +64,31 @@ class NfcHostApduService : HostApduService() {
     private val logger by lazy {
         val logDirectory = commonDocumentDirPath("nfc_logs")
 
-        // the %g is the number of the current log in the rotation
-        val logFile = File(logDirectory, "nfc_log_%g.log")
-        // ...
-        // make sure that the log directory exists, or the next command will fail
-        //
+        val dateAndTime = SimpleDateFormat(
+            "yyyy_MM_dd_HH_mm_ss_SSS",
+            Locale.getDefault()
+        ).format(Date())
 
-        // create a log file at the specified location that is capped 100kB.  Keep up to 5 logs.
-        val logHandler = FileHandler(logFile.absolutePath, 100 * 1024, 100)
-        // use a text-based format instead of the default XML-based format
+        val logFile = File(logDirectory, "nfc_log_$dateAndTime.log")
+        val logHandler = FileHandler(logFile.absolutePath, 1000 * 1024, 1000)
         logHandler.formatter = SimpleFormatter()
-        // get the actual Logger
         Logger.getLogger(packageName).apply {
-            // Log to the file by associating the FileHandler with the log
             addHandler(logHandler)
         }
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            onStartCommand() 
+            intent: $intent"
+            flags: $flags
+            startId: $startId
+            """
+        )
+
         if (intent.hasExtra(NDEF_ENCODED_MESSAGE_KEY)) {
             val encodedData = intent.getStringExtra(NDEF_ENCODED_MESSAGE_KEY)
             requireNotNull(encodedData)
@@ -165,6 +174,15 @@ class NfcHostApduService : HostApduService() {
     }
 
     override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle): ByteArray {
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            processCommandApdu() 
+            incoming extras: $extras
+            incoming raw bytes: $commandApdu
+            """
+        )
 
         //
         // The following flow is based on Appendix E "Example of Mapping Version 2.0 Command Flow"
@@ -175,7 +193,15 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             processCommandApdu() 
-            incoming commandApdu: ${ NfcUtils.bytesToHex(commandApdu)}
+            incoming commandApdu hex: ${NfcUtils.bytesToHex(commandApdu)}
+            """
+        )
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check APDU_SELECT
             """
         )
 
@@ -200,6 +226,14 @@ class NfcHostApduService : HostApduService() {
             return A_OKAY
         }
 
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check CAPABILITY_CONTAINER
+            """
+        )
+
         //
         // Second command: Capability Container select (Section 5.5.3 in NFC Forum spec)
         //
@@ -220,6 +254,14 @@ class NfcHostApduService : HostApduService() {
 
             return A_OKAY
         }
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check READ_CAPABILITY_CONTAINER
+            """
+        )
 
         //
         // Third command: ReadBinary data from CC file (Section 5.5.4 in NFC Forum spec)
@@ -243,6 +285,14 @@ class NfcHostApduService : HostApduService() {
             return READ_CAPABILITY_CONTAINER_RESPONSE
         }
 
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check NDEF_SELECT
+            """
+        )
+
         //
         // Fourth command: NDEF Select command (Section 5.5.5 in NFC Forum spec)
         //
@@ -263,6 +313,14 @@ class NfcHostApduService : HostApduService() {
 
             return A_OKAY
         }
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check NDEF_READ_BINARY_NLEN
+            """
+        )
 
         //
         // Fifth command:  ReadBinary, read NLEN field
@@ -294,6 +352,14 @@ class NfcHostApduService : HostApduService() {
 
             return response
         }
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            check NDEF_READ_BINARY_GET_NDEF
+            """
+        )
 
         //
         // Sixth command: ReadBinary, get NDEF data
@@ -341,15 +407,20 @@ class NfcHostApduService : HostApduService() {
             return response
         }
 
-        //
-        // We're doing something outside our scope
-        //
         logger.log(
             Level.INFO,
             """
             $TAG
             processCommandApdu() 
             UNKNOWN_COMMAND
+            """
+        )
+
+        logger.log(
+            Level.INFO,
+            """
+            $TAG
+            processCommandApdu() 
             Our response ndefUri.payload: ${ NfcUtils.bytesToHex(ndefUri.payload)}
             """
         )
@@ -378,6 +449,19 @@ class NfcHostApduService : HostApduService() {
             onCreate() 
             """
         )
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, error ->
+            logger.log(
+                Level.INFO,
+                """
+                $TAG
+                onUncaughtException() 
+                Thread: $thread
+                Exception: $error
+                Exception Message: ${error.message}
+                """
+            )
+        }
     }
 
     override fun onDeactivated(reason: Int) {
@@ -417,6 +501,7 @@ class NfcHostApduService : HostApduService() {
             0x00,  // NDEF Tag Application name
             0x00 // Le field	- Maximum number of bytes expected in the data field of the response to the command
         )
+
         private val CAPABILITY_CONTAINER = byteArrayOf(
             0x00,  // CLA	- Class - Class of instruction
             0xa4.toByte(),  // INS	- Instruction - Instruction code
@@ -425,6 +510,7 @@ class NfcHostApduService : HostApduService() {
             0x02,  // Lc field	- Number of bytes present in the data field of the command
             0xe1.toByte(), 0x03 // file identifier of the CC file
         )
+
         private val READ_CAPABILITY_CONTAINER = byteArrayOf(
             0x00,  // CLA	- Class - Class of instruction
             0xb0.toByte(),  // INS	- Instruction - Instruction code
@@ -432,6 +518,7 @@ class NfcHostApduService : HostApduService() {
             0x00,  // P2	- Parameter 2 - Instruction parameter 2
             0x0f // Lc field	- Number of bytes present in the data field of the command
         )
+
         private val READ_CAPABILITY_CONTAINER_RESPONSE = byteArrayOf(
             0x00, 0x0F,  // CCLEN length of the CC file
             0x20,  // Mapping Version 2.0
@@ -445,6 +532,7 @@ class NfcHostApduService : HostApduService() {
             0x00,  // Write access without any security
             0x90.toByte(), 0x00 // A_OKAY
         )
+
         private val NDEF_SELECT = byteArrayOf(
             0x00,  // CLA	- Class - Class of instruction
             0xa4.toByte(),  // Instruction byte (INS) for Select command
@@ -454,22 +542,26 @@ class NfcHostApduService : HostApduService() {
             0xE1.toByte(),
             0x04 // file identifier of the NDEF file retrieved from the CC file
         )
+
         private val NDEF_READ_BINARY_NLEN = byteArrayOf(
             0x00,  // Class byte (CLA)
             0xb0.toByte(),  // Instruction byte (INS) for ReadBinary command
             0x00, 0x00,  // Parameter byte (P1, P2), offset inside the CC file
             0x02 // Le field
         )
+
         private val NDEF_READ_BINARY_GET_NDEF = byteArrayOf(
             0x00,  // Class byte (CLA)
             0xb0.toByte(),  // Instruction byte (INS) for ReadBinary command
             0x00, 0x00,  // Parameter byte (P1, P2), offset inside the CC file
             0x0f //  Le field
         )
+
         private val A_OKAY = byteArrayOf(
             0x90.toByte(),  // SW1	Status byte 1 - Command processing status
             0x00 // SW2	Status byte 2 - Command processing qualifier
         )
+
         private val NDEF_ID = byteArrayOf(
             0xE1.toByte(),
             0x04
