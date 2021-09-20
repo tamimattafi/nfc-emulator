@@ -89,6 +89,11 @@ class NfcHostApduService : HostApduService() {
             """
         )
 
+        if (intent.getBooleanExtra("closeService", false)) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         if (intent.hasExtra(NDEF_ENCODED_MESSAGE_KEY)) {
             val encodedData = intent.getStringExtra(NDEF_ENCODED_MESSAGE_KEY)
             requireNotNull(encodedData)
@@ -129,7 +134,10 @@ class NfcHostApduService : HostApduService() {
             R.drawable.ic_launcher_foreground
         )
 
-        val intent = Intent(this, NfcHostApduService::class.java)
+        val intent = Intent(this, NfcHostApduService::class.java).apply {
+            putExtra("closeService", true)
+        }
+
         val pendingIntent = PendingIntent.getService(this, 0, intent, 0)
 
         val action = NotificationCompat.Action.Builder(
