@@ -22,6 +22,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import com.attafitamim.nfc.common.utils.asJson
 import com.attafitamim.nfc.view.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -86,7 +87,29 @@ class NfcHostApduService : HostApduService() {
             intent: $intent"
             flags: $flags
             startId: $startId
+            """.trimIndent()
+        )
+
+        if (intent.extras == null) {
+            logger.log(
+                Level.INFO,
+                """
+                $TAG
+                onStartCommand() 
+                Extras: null"
+                """.trimIndent()
+            )
+
+            return START_NOT_STICKY
+        }
+
+        logger.log(
+            Level.INFO,
             """
+            $TAG
+            onStartCommand() 
+            Extras: ${intent.extras.asJson}"
+            """.trimIndent()
         )
 
         if (intent.getBooleanExtra("closeService", false)) {
@@ -113,8 +136,8 @@ class NfcHostApduService : HostApduService() {
                 """
                 $TAG
                 onStartCommand() 
-                NDEF: $ndefUri"
-                """
+                NDEF: ${ndefUri.asJson}"
+                """.trimIndent()
             )
 
             createNotificationChannel()
@@ -161,7 +184,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             onStartForeground() 
-            """
+            """.trimIndent()
         )
     }
 
@@ -177,19 +200,19 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             onCreateNotificationChannel() 
-            """
+            """.trimIndent()
         )
     }
 
-    override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle): ByteArray {
+    override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
         logger.log(
             Level.INFO,
             """
             $TAG
             processCommandApdu() 
-            incoming extras: $extras
+            incoming extras: ${extras?.asJson}
             incoming raw bytes: $commandApdu
-            """
+            """.trimIndent()
         )
 
         //
@@ -202,7 +225,7 @@ class NfcHostApduService : HostApduService() {
             $TAG
             processCommandApdu() 
             incoming commandApdu hex: ${NfcUtils.bytesToHex(commandApdu)}
-            """
+            """.trimIndent()
         )
 
         logger.log(
@@ -210,7 +233,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check APDU_SELECT
-            """
+            """.trimIndent()
         )
 
         //
@@ -228,7 +251,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 APDU_SELECT triggered
                 Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
-                """
+                """.trimIndent()
             )
 
             return A_OKAY
@@ -239,7 +262,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check CAPABILITY_CONTAINER
-            """
+            """.trimIndent()
         )
 
         //
@@ -257,7 +280,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 CAPABILITY_CONTAINER triggered
                 Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
-                """
+                """.trimIndent()
             )
 
             return A_OKAY
@@ -268,7 +291,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check READ_CAPABILITY_CONTAINER
-            """
+            """.trimIndent()
         )
 
         //
@@ -286,7 +309,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 READ_CAPABILITY_CONTAINER triggered
                 Our response READ_CAPABILITY_CONTAINER_RESPONSE: ${ NfcUtils.bytesToHex(READ_CAPABILITY_CONTAINER_RESPONSE)}
-                """
+                """.trimIndent()
             )
 
             readCapabilityContainerCheck = true
@@ -298,7 +321,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check NDEF_SELECT
-            """
+            """.trimIndent()
         )
 
         //
@@ -316,7 +339,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 NDEF_SELECT triggered
                 Our response A_OKAY: ${ NfcUtils.bytesToHex(A_OKAY)}
-                """
+                """.trimIndent()
             )
 
             return A_OKAY
@@ -327,7 +350,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check NDEF_READ_BINARY_NLEN
-            """
+            """.trimIndent()
         )
 
         //
@@ -355,7 +378,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 NDEF_READ_BINARY_NLEN triggered
                 Our response: ${ NfcUtils.bytesToHex(response)}
-                """
+                """.trimIndent()
             )
 
             return response
@@ -366,7 +389,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             check NDEF_READ_BINARY_GET_NDEF
-            """
+            """.trimIndent()
         )
 
         //
@@ -408,7 +431,7 @@ class NfcHostApduService : HostApduService() {
                 processCommandApdu() 
                 NDEF_READ_BINARY_GET_NDEF triggered
                 Our response: ${ NfcUtils.bytesToHex(response)}
-                """
+                """.trimIndent()
             )
 
             readCapabilityContainerCheck = false
@@ -421,7 +444,7 @@ class NfcHostApduService : HostApduService() {
             $TAG
             processCommandApdu() 
             UNKNOWN_COMMAND
-            """
+            """.trimIndent()
         )
 
         logger.log(
@@ -430,7 +453,7 @@ class NfcHostApduService : HostApduService() {
             $TAG
             processCommandApdu() 
             Our response ndefUri.payload: ${ NfcUtils.bytesToHex(ndefUri.payload)}
-            """
+            """.trimIndent()
         )
 
         return ndefUri.payload
@@ -442,7 +465,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             onDestroy() 
-            """
+            """.trimIndent()
         )
 
         super.onDestroy()
@@ -455,7 +478,7 @@ class NfcHostApduService : HostApduService() {
             """
             $TAG
             onCreate() 
-            """
+            """.trimIndent()
         )
 
         Thread.setDefaultUncaughtExceptionHandler { thread, error ->
@@ -466,8 +489,8 @@ class NfcHostApduService : HostApduService() {
                 onUncaughtException() 
                 Thread: $thread
                 Exception: $error
-                Exception Message: ${error.message}
-                """
+                StackTrace: ${error.stackTrace.joinToString("\n")}
+                """.trimIndent()
             )
         }
     }
@@ -479,7 +502,7 @@ class NfcHostApduService : HostApduService() {
             $TAG
             onDeactivated() 
             Reason: $reason
-            """
+            """.trimIndent()
         )
     }
 
