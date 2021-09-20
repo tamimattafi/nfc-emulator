@@ -514,7 +514,6 @@ class NfcHostApduService : HostApduService() {
         //
         // We use the default AID from the HCE Android documentation
         // https://developer.android.com/guide/topics/connectivity/nfc/hce.html
-        //
         // Ala... <aid-filter android:name="F0394148148100" />
         //
         private val APDU_SELECT = byteArrayOf(
@@ -522,15 +521,22 @@ class NfcHostApduService : HostApduService() {
             0xA4.toByte(),  // INS	- Instruction - Instruction code
             0x04,  // P1	- Parameter 1 - Instruction parameter 1
             0x00,  // P2	- Parameter 2 - Instruction parameter 2
-            0x07,  // Lc field	- Number of bytes present in the data field of the command
-            0xF0.toByte(),
-            0x39,
+            0x0E,  // Lc field	- Number of bytes present in the data field of the command
+            0x32.toByte(),
+            0x50,
             0x41,
-            0x48,
-            0x14,
-            0x81.toByte(),
-            0x00,  // NDEF Tag Application name
-            0x00 // Le field	- Maximum number of bytes expected in the data field of the response to the command
+            0x59,
+            0x2E,
+            0x53.toByte(),
+            0x59,
+            0x53,
+            0x2E,
+            0x44,
+            0x44,
+            0x46,
+            0x30,
+            0x31,
+            0x00
         )
 
         private val CAPABILITY_CONTAINER = byteArrayOf(
