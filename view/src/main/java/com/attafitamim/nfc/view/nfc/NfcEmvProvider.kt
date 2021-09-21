@@ -1,6 +1,8 @@
 package com.attafitamim.nfc.view.nfc
 
 import android.nfc.tech.IsoDep
+import android.util.Log
+import com.attafitamim.nfc.view.nfc.temp.NfcHostApduService.Companion.toHex
 import com.github.devnied.emvnfccard.parser.IProvider
 
 class NfcEmvProvider : IProvider {
@@ -9,8 +11,11 @@ class NfcEmvProvider : IProvider {
 
     override fun transceive(pCommand: ByteArray): ByteArray
         = tag.run {
+            Log.d("APDU_TAG", "Transceive: ${pCommand.toHex()}")
             if (!isConnected) connect()
-            transceive(pCommand)
+            val response = transceive(pCommand)
+            Log.d("APDU_TAG", "Response: ${response.toHex()}")
+            response
         }
 
     override fun getAt(): ByteArray {
